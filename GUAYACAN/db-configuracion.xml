@@ -1,0 +1,8 @@
+<Configuracion>
+  <Servidor Servidor="">Servidor</Servidor>
+  <Puerto Puerto="">Puerto</Puerto>
+  <Usuario Usuario="sa">Usuario</Usuario>
+  <Password Password="Cyber2000">Password</Password>
+  <BaseDatos BaseDatos="">BaseDatos</BaseDatos>
+  <Cadena Cadena="Data Source=DESKTOP-B8TCFEG; Initial Catalog=CP_Ocean_Recibo; Persist Security Info=False; Pwd=Cyber2000; User ID=sa">Cadena</Cadena>
+</Configuracion>
