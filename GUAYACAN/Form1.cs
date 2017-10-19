@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.IO;
 using System.Xml;
+using System.Xml.Schema;
 using LachosXML;
 using CrystalDecisions.Shared;
 using CrystalDecisions.CrystalReports.Engine;
@@ -907,76 +908,115 @@ namespace GUAYACAN
             }
         }
 
+        /*
+         * modificación para manejar las 2 version de complemento de los cfd version 3.2 y 3.3
+         * se debe de poner un punto de condicion para saber si con que version de xml se esta trabajando
+         */
+
+        private bool Validacion_Version_XML(string archivoXML, string archivoXSD)
+        {
+            try
+            {
+                //XmlTextReader tr = new XmlTextReader(archivoXML); // se monto el xml que se va a validar
+                //XmlValidatingReader vr = new XmlValidatingReader(tr); // se coloca el contenido del archivo en memoria
+
+                XmlReaderSettings settings = new XmlReaderSettings();
+                settings.ValidationType = ValidationType.Schema;
+                settings.Schemas.Add(null,XmlReader.Create(@archivoXSD));
+
+                XmlReader xmlReader = XmlReader.Create(@archivoXML,settings);
+                XmlDocument xmlDoc = new XmlDocument();
+                xmlDoc.Load(xmlReader);
+                xmlReader.Close();
+                return false;
+            }
+            catch (Exception ex)
+            {
+                return true;
+            }
+            
+        }
+
         private void LeerXML(string archivo)
         {
+            string archivoXSD_32 = "nomina11.xsd"; //Application.StartupPath + @"\cfdv32.xsd";
+            string archivoXSD_33 = "nomina12.xsd"; //Application.StartupPath + @"\cfdv33.xsd";
 
-            System.Xml.XmlTextReader Recibo = new System.Xml.XmlTextReader(@archivo);
-
-            while (Recibo.Read())
+            if (!Validacion_Version_XML(archivo, archivoXSD_33))
             {
-                Recibo.MoveToContent();
+                //Bitacora("El archivo " + archivo + "es de la version 3.2 de cfdi");
+                System.Xml.XmlTextReader Recibo = new System.Xml.XmlTextReader(@archivo);
 
-                if (Recibo.NodeType == System.Xml.XmlNodeType.Element)
+                while (Recibo.Read())
                 {
+                    Recibo.MoveToContent();
 
-                    switch (Recibo.Name.ToString())
+                    if (Recibo.NodeType == System.Xml.XmlNodeType.Element)
                     {
-                        case "cfdi:Comprobante":
-                            {
-                                SerieCertificadoEmisor = Recibo.GetAttribute("noCertificado").ToString();
-                                Sello = Recibo.GetAttribute("sello").ToString();
-                                total = Recibo.GetAttribute("total").ToString();
-                                Forma_de_pago = Recibo.GetAttribute("formaDePago");
-                                Mpago = Recibo.GetAttribute("metodoDePago");
-                                Complemento = Recibo.GetAttribute("version").ToString();
-                                break;
-                            }
-                        case "cfdi:Emisor":
-                            {
-                                rfcemisor = Recibo.GetAttribute("rfc").ToString();
-                                emisor = Recibo.GetAttribute("nombre").ToString();
-                                break;
-                            }
-                        case "cfdi:Receptor":
-                            {
-                                rfc = Recibo.GetAttribute("rfc").ToString(); //rfc del trabajador
-                                nombre_receptor = Recibo.GetAttribute("nombre").ToString();
-                                break;
-                            }
-                        case "tfd:TimbreFiscalDigital":
-                            {
-                                FolioFiscal = Recibo.GetAttribute("UUID").ToString(); //nodo["tfd:TimbreFiscalDigital "].GetAttribute("UUID").ToString();
-                                SelloSat = Recibo.GetAttribute("selloSAT").ToString();
-                                SerieCertificadoSat = Recibo.GetAttribute("noCertificadoSAT").ToString();
-                                Version = Recibo.GetAttribute("version").ToString();
-                                FechaTimbrado = Recibo.GetAttribute("FechaTimbrado").ToString();
+                        // se determinaa la lectura de los componentes de las version de los  cfdi atravez de la version 
 
-                                break;
-                            }
-                        case "nomina12:Nomina":
-                            {
-                                //periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();                                
-                                FechaPago = Recibo.GetAttribute("FechaPago").ToString();
-                                //NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
-                                VersionCFDI = Recibo.GetAttribute("Version").ToString();
-                                break;
-                            }
-                        case "nomina12:Receptor":
-                            {
-                                periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();
-                                //FechaPago = Recibo.GetAttribute("FechaPago").ToString();
-                                NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
-                                //VersionCFDI = Recibo.GetAttribute("Version").ToString();
-                                break;
-                            }
+
+                        switch (Recibo.Name.ToString())
+                        {
+                            case "cfdi:Comprobante":
+                                {
+                                    SerieCertificadoEmisor = Recibo.GetAttribute("NoCertificado").ToString();
+                                    Sello = Recibo.GetAttribute("Sello").ToString();
+                                    total = Recibo.GetAttribute("Total").ToString();
+                                    //se cambian los valores de la forma de pago  por el metodo de pago esto debido al cambio del sat en la version 3.3.
+                                    Forma_de_pago = Recibo.GetAttribute("MetodoPago"); //Recibo.GetAttribute("FormaDePago");  
+                                    Mpago = Recibo.GetAttribute("FormaPago"); //Recibo.GetAttribute("MetodoDePago");
+                                    Complemento = Recibo.GetAttribute("Version").ToString();
+                                    break;
+                                }
+                            case "cfdi:Emisor":
+                                {
+                                    rfcemisor = Recibo.GetAttribute("Rfc").ToString();
+                                    emisor = Recibo.GetAttribute("Nombre").ToString();
+                                    break;
+                                }
+                            case "cfdi:Receptor":
+                                {
+                                    rfc = Recibo.GetAttribute("Rfc").ToString(); //rfc del trabajador
+                                    nombre_receptor = Recibo.GetAttribute("Nombre").ToString();
+                                    break;
+                                }
+                            case "tfd:TimbreFiscalDigital":
+                                {
+                                    FolioFiscal = Recibo.GetAttribute("UUID").ToString(); //nodo["tfd:TimbreFiscalDigital "].GetAttribute("UUID").ToString();
+                                    SelloSat = Recibo.GetAttribute("SelloSAT").ToString();
+                                    SerieCertificadoSat = Recibo.GetAttribute("NoCertificadoSAT").ToString();
+                                    Version = Recibo.GetAttribute("Version").ToString();
+                                    FechaTimbrado = Recibo.GetAttribute("FechaTimbrado").ToString();
+
+                                    break;
+                                }
+                            case "nomina12:Nomina":
+                                {
+                                    //periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();                                
+                                    FechaPago = Recibo.GetAttribute("FechaPago").ToString();
+                                    //NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
+                                    VersionCFDI = Recibo.GetAttribute("Version").ToString();
+                                    break;
+                                }
+                            case "nomina12:Receptor":
+                                {
+                                    periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();
+                                    //FechaPago = Recibo.GetAttribute("FechaPago").ToString();
+                                    NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
+                                    //VersionCFDI = Recibo.GetAttribute("Version").ToString();
+                                    break;
+                                }
+                        }
+
+
                     }
 
+
                 }
-
-
+                Recibo.Close();
             }
-
-            Recibo.Close();
+                        
 
         }
 
