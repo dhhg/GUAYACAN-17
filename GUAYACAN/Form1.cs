@@ -59,6 +59,7 @@ namespace GUAYACAN
         private string Modulo;
         private int modulo;  //0 xml, 1 pdf, 2 imprsion, 3 correo
         private bool EsCancelado = false;
+        private string SQL;
 
         private Parametros _procesoEyS;
         private Correo _correo;
@@ -68,6 +69,7 @@ namespace GUAYACAN
         public string periodo;
         public string rfc;
         public string rfcemisor;
+        public string rfcprovcertif;
         public string emisor;
         public string FechaPago;
         public string SerieCertificadoEmisor;
@@ -198,7 +200,14 @@ namespace GUAYACAN
 
                                             Bitacora("El recibo " + f.FullName.ToString() + " se copio en el directorio con el nombre " + f.FullName.ToString() + " | " + emisor + " | " + sucursal + " | " + FechaPago + " | " + rfc + ".xml");
 
-                                            CadenaOriginal = "||" + Version + "|" + FolioFiscal + "|" + FechaHoraCertificado + "|" + SelloSat + "|" + SerieCertificadoSat + "||";
+                                            if(Complemento.ToString()=="3.3")
+                                            {
+                                                CadenaOriginal = "||" + Version + "|" + FolioFiscal + "|" + FechaTimbrado + "|" + Sello + "|" + SerieCertificadoSat + "||";
+                                            }
+                                            else
+                                            {
+                                                CadenaOriginal = "||" + Version + "|" + FolioFiscal + "|" + FechaHoraCertificado + "|" + SelloSat + "|" + SerieCertificadoSat + "||";
+                                            }
                                             CantidadLetra camletra = new CantidadLetra();
 
                                             if (total != null && total.ToString().Length > 0)
@@ -206,11 +215,38 @@ namespace GUAYACAN
                                                 cLetra = camletra.ConvertirCadena(total);
 
                                                 totalqr(total);
+                                                
+                                                //fecha 23/10/2017
+                                                //modificacion de generacion de contenido del qrcode donde se indica la version del complemento.
 
-                                                qr = "?re=" + rfcemisor + "&rr=" + rfc + "&tt=" + tt + "&id=" + FolioFiscal;
+                                                if (Complemento.ToString() == "3.3")
+                                                {
+                                                    qr= "https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?&id="+FolioFiscal+"&re="+rfcemisor+"&rr="+rfc+"&tt="+tt;
+
+                                                }
+                                                else
+                                                {
+                                                    qr = "?re=" + rfcemisor + "&rr=" + rfc + "&tt=" + tt + "&id=" + FolioFiscal;
+                                                }
+
+                                                //////////////////////////////////////////////////////////////////////////////////////////
+                                                
                                                 Metodo_Pago();
-                                                string SQL = "insert into Recibos values ('" + GUIdArchivo + "','" + NumeroEmpleado + "','" + periodo + "','" + FechaPago + "','" + SerieCertificadoEmisor + "','" + FolioFiscal + "','" + SerieCertificadoSat + "','" + CadenaOriginal + "','" + Version + "','" + Sello + "','" + @Ruta + "','" + ArchivoPDF + "','" + ArchivoXML + "'," + "0,0,0,'" + FechaTimbrado + "','" + qr + "','" + cLetra + "','" + emisor + "','" + rfcemisor + "','" + SelloSat + "','" + Properties.Settings.Default.RutaPublicacion.ToString() + "','" + Forma_de_pago.ToString() + "','" + MetodoPago.ToString() + "','" + Complemento.ToString() + "','" + VersionCFDI.ToString() + "',0," + NumPeriodo + ",'" + nombre_receptor + "','" + Properties.Settings.Default.RutaTrabajo.ToString() + @"\qrcode\" + GUIdArchivo + ".png" + "')";
+                                                
+                                                //23/10/2017
+                                                //se modifico el metodo de almacenamiento de la tabla de recibos donde se agrego el rfc del pac.
 
+                                                if (Complemento.ToString() == "3.2")
+                                                {
+                                                    SQL = "insert into Recibos(GUIDArchivo,numeroempleado,periodo,fechapago,seriecertifiadoemisor,foliofiscal,seriesertificadosat,cadenaoriginal,version,sello,ruta,archivopdf,archivoxml,enviado,impreso,pdf,FechaTimbrado,qrcode,cletra,emisor,rfcemisro,sellosat,RutaPublicar,FormaDePago,MetodoPago,Complemento,VersionCFDi,FTP,NumeroPeriodo,Receptor,imgqrcode) values ('" + GUIdArchivo + "','" + NumeroEmpleado + "','" + periodo + "','" + FechaPago + "','" + SerieCertificadoEmisor + "','" + FolioFiscal + "','" + SerieCertificadoSat + "','" + CadenaOriginal + "','" + Version + "','" + Sello + "','" + @Ruta + "','" + ArchivoPDF + "','" + ArchivoXML + "'," + "0,0,0,'" + FechaTimbrado + "','" + qr + "','" + cLetra + "','" + emisor + "','" + rfcemisor + "','" + SelloSat + "','" + Properties.Settings.Default.RutaPublicacion.ToString() + "','" + Forma_de_pago.ToString() + "','" + MetodoPago.ToString() + "','" + Complemento.ToString() + "','" + VersionCFDI.ToString() + "',0," + NumPeriodo + ",'" + nombre_receptor + "','" + Properties.Settings.Default.RutaTrabajo.ToString() + @"\qrcode\" + GUIdArchivo + ".png" + "')";
+                                                }
+
+                                                if (Complemento.ToString() == "3.3")
+                                                {
+                                                    SQL = "insert into Recibos values ('" + GUIdArchivo + "','" + NumeroEmpleado + "','" + periodo + "','" + FechaPago + "','" + SerieCertificadoEmisor + "','" + FolioFiscal + "','" + SerieCertificadoSat + "','" + CadenaOriginal + "','" + Version + "','" + Sello + "','" + @Ruta + "','" + ArchivoPDF + "','" + ArchivoXML + "'," + "0,0,0,'" + FechaTimbrado + "','" + qr + "','" + cLetra + "','" + emisor + "','" + rfcemisor + "','" + rfcprovcertif + "','"  + SelloSat + "','" + Properties.Settings.Default.RutaPublicacion.ToString() + "','" + Forma_de_pago.ToString() + "','" + MetodoPago.ToString() + "','" + Complemento.ToString() + "','" + VersionCFDI.ToString() + "',0," + NumPeriodo + ",'" + nombre_receptor + "','" + Properties.Settings.Default.RutaTrabajo.ToString() + @"\qrcode\" + GUIdArchivo + ".png" + "')";
+                                                }
+
+                                                /////////////////////////////////////////////////////////////////////////////////////////////
                                                 //SQL.Replace(@"\","/");
                                                 if (db.Insertar(SQL))
                                                 {
@@ -648,7 +684,16 @@ namespace GUAYACAN
                             }
                         case "99":
                             {
-                                this.MetodoPago = this.MetodoPago + "Otros" + ",";
+                                //fecha de modificacion 25/10/2017
+                                //se valido el cambio de etiqueta que se define por el complemento de cfdi.
+                                if (Complemento.ToString() == "3.3")
+                                {
+                                    this.MetodoPago = this.MetodoPago + "Por definir" + ",";
+                                }
+                                else
+                                {
+                                    this.MetodoPago = this.MetodoPago + "Otros" + ",";
+                                } 
                                 break;
                             }
                         case "NA":
@@ -711,7 +756,17 @@ namespace GUAYACAN
                             }
                         case "99":
                             {
-                                this.MetodoPago = this.MetodoPago + "Otros";
+                                //fecha de modificacion 25/10/2017
+                                //se valido el cambio de etiqueta que se define por el complemento de cfdi.
+                                if (Complemento.ToString() == "3.3")
+                                {
+                                    this.MetodoPago = this.MetodoPago + "Por definir" + ",";
+                                }
+                                else
+                                {
+                                    this.MetodoPago = this.MetodoPago + "Otros" + ",";
+                                } 
+                                //this.MetodoPago = this.MetodoPago + "Otros";
                                 break;
                             }
                         case "NA":
@@ -988,6 +1043,7 @@ namespace GUAYACAN
                                     SerieCertificadoSat = Recibo.GetAttribute("NoCertificadoSAT").ToString();
                                     Version = Recibo.GetAttribute("Version").ToString();
                                     FechaTimbrado = Recibo.GetAttribute("FechaTimbrado").ToString();
+                                    rfcprovcertif = Recibo.GetAttribute("RfcProvCertif").ToString();
 
                                     break;
                                 }
