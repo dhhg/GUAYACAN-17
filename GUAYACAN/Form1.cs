@@ -151,6 +151,11 @@ namespace GUAYACAN
                     foreach (FileInfo f in archivos)
                     {
                         string nomarchivo = f.Name.ToString();
+                        
+                        //24102017
+                        //establecer control de validación para poder definir si se logro acceder a la información del
+                        //comprobante fiscal cfdi o xml.
+
                         LeerXML(f.FullName.ToString());
                         string[] Nombre = nomarchivo.Split('.');
                         GUIdArchivo = Nombre[0];
@@ -200,11 +205,12 @@ namespace GUAYACAN
 
                                             Bitacora("El recibo " + f.FullName.ToString() + " se copio en el directorio con el nombre " + f.FullName.ToString() + " | " + emisor + " | " + sucursal + " | " + FechaPago + " | " + rfc + ".xml");
 
-                                            if(Complemento.ToString()=="3.3")
+                                            if(Complemento=="3.3")
                                             {
                                                 CadenaOriginal = "||" + Version + "|" + FolioFiscal + "|" + FechaTimbrado + "|" + Sello + "|" + SerieCertificadoSat + "||";
                                             }
-                                            else
+
+                                            if (Complemento == "3.2")
                                             {
                                                 CadenaOriginal = "||" + Version + "|" + FolioFiscal + "|" + FechaHoraCertificado + "|" + SelloSat + "|" + SerieCertificadoSat + "||";
                                             }
@@ -219,12 +225,13 @@ namespace GUAYACAN
                                                 //fecha 23/10/2017
                                                 //modificacion de generacion de contenido del qrcode donde se indica la version del complemento.
 
-                                                if (Complemento.ToString() == "3.3")
+                                                if (Complemento == "3.3")
                                                 {
                                                     qr= "https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?&id="+FolioFiscal+"&re="+rfcemisor+"&rr="+rfc+"&tt="+tt;
 
                                                 }
-                                                else
+
+                                                if(Complemento == "3.2")
                                                 {
                                                     qr = "?re=" + rfcemisor + "&rr=" + rfc + "&tt=" + tt + "&id=" + FolioFiscal;
                                                 }
@@ -236,14 +243,14 @@ namespace GUAYACAN
                                                 //23/10/2017
                                                 //se modifico el metodo de almacenamiento de la tabla de recibos donde se agrego el rfc del pac.
 
-                                                if (Complemento.ToString() == "3.2")
+                                                if (Complemento == "3.2")
                                                 {
-                                                    SQL = "insert into Recibos(GUIDArchivo,numeroempleado,periodo,fechapago,seriecertifiadoemisor,foliofiscal,seriesertificadosat,cadenaoriginal,version,sello,ruta,archivopdf,archivoxml,enviado,impreso,pdf,FechaTimbrado,qrcode,cletra,emisor,rfcemisro,sellosat,RutaPublicar,FormaDePago,MetodoPago,Complemento,VersionCFDi,FTP,NumeroPeriodo,Receptor,imgqrcode) values ('" + GUIdArchivo + "','" + NumeroEmpleado + "','" + periodo + "','" + FechaPago + "','" + SerieCertificadoEmisor + "','" + FolioFiscal + "','" + SerieCertificadoSat + "','" + CadenaOriginal + "','" + Version + "','" + Sello + "','" + @Ruta + "','" + ArchivoPDF + "','" + ArchivoXML + "'," + "0,0,0,'" + FechaTimbrado + "','" + qr + "','" + cLetra + "','" + emisor + "','" + rfcemisor + "','" + SelloSat + "','" + Properties.Settings.Default.RutaPublicacion.ToString() + "','" + Forma_de_pago.ToString() + "','" + MetodoPago.ToString() + "','" + Complemento.ToString() + "','" + VersionCFDI.ToString() + "',0," + NumPeriodo + ",'" + nombre_receptor + "','" + Properties.Settings.Default.RutaTrabajo.ToString() + @"\qrcode\" + GUIdArchivo + ".png" + "')";
+                                                    SQL = "insert into Recibos(GUIDArchivo,numeroempleado,preriodo,fechapago,seriecertificadoemisor,foliofiscal,seriesertificadosat,cadenaoriginal,version,sello,ruta,archivopdf,archivoxml,enviado,impreso,pdf,FechaTimbrado,qrcode,cletra,emisor,rfcemisro,sellosat,RutaPublicar,FormaDePago,MetodoPago,Complemento,VersionCFDi,FTP,NumeroPeriodo,Receptor,imgqrcode) values ('" + GUIdArchivo + "','" + NumeroEmpleado + "','" + periodo + "','" + FechaPago + "','" + SerieCertificadoEmisor + "','" + FolioFiscal + "','" + SerieCertificadoSat + "','" + CadenaOriginal + "','" + Version + "','" + Sello + "','" + @Ruta + "','" + ArchivoPDF + "','" + ArchivoXML + "'," + "0,0,0,'" + FechaTimbrado + "','" + qr + "','" + cLetra + "','" + emisor + "','" + rfcemisor + "','" + SelloSat + "','" + Properties.Settings.Default.RutaPublicacion.ToString() + "','" + Forma_de_pago.ToString() + "','" + MetodoPago.ToString() + "','" + Complemento.ToString() + "','" + VersionCFDI.ToString() + "',0," + NumPeriodo + ",'" + nombre_receptor + "','" + Properties.Settings.Default.RutaTrabajo.ToString() + @"\qrcode\" + GUIdArchivo + ".png" + "')";
                                                 }
 
-                                                if (Complemento.ToString() == "3.3")
+                                                if (Complemento == "3.3")
                                                 {
-                                                    SQL = "insert into Recibos values ('" + GUIdArchivo + "','" + NumeroEmpleado + "','" + periodo + "','" + FechaPago + "','" + SerieCertificadoEmisor + "','" + FolioFiscal + "','" + SerieCertificadoSat + "','" + CadenaOriginal + "','" + Version + "','" + Sello + "','" + @Ruta + "','" + ArchivoPDF + "','" + ArchivoXML + "'," + "0,0,0,'" + FechaTimbrado + "','" + qr + "','" + cLetra + "','" + emisor + "','" + rfcemisor + "','" + rfcprovcertif + "','"  + SelloSat + "','" + Properties.Settings.Default.RutaPublicacion.ToString() + "','" + Forma_de_pago.ToString() + "','" + MetodoPago.ToString() + "','" + Complemento.ToString() + "','" + VersionCFDI.ToString() + "',0," + NumPeriodo + ",'" + nombre_receptor + "','" + Properties.Settings.Default.RutaTrabajo.ToString() + @"\qrcode\" + GUIdArchivo + ".png" + "')";
+                                                    SQL = "insert into Recibos values ('" + GUIdArchivo + "','" + NumeroEmpleado + "','" + periodo + "','" + FechaPago + "','" + SerieCertificadoEmisor + "','" + FolioFiscal + "','" + SerieCertificadoSat + "','" + CadenaOriginal + "','" + Version + "','" + Sello + "','" + @Ruta + "','" + ArchivoPDF + "','" + ArchivoXML + "'," + "0,0,0,'" + FechaTimbrado + "','" + @qr + "','" + cLetra + "','" + emisor + "','" + rfcemisor + "','" + rfcprovcertif + "','"  + SelloSat + "','" + Properties.Settings.Default.RutaPublicacion.ToString() + "','" + Forma_de_pago.ToString() + "','" + MetodoPago.ToString() + "','" + Complemento.ToString() + "','" + VersionCFDI.ToString() + "',0," + NumPeriodo + ",'" + nombre_receptor + "','" + Properties.Settings.Default.RutaTrabajo.ToString() + @"\qrcode\" + GUIdArchivo + ".png" + "')";
                                                 }
 
                                                 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -628,7 +635,17 @@ namespace GUAYACAN
         /// </summary>
         private void Metodo_Pago()
         {
-            string[] Metodo = Mpago.Split(',');
+            string[] Metodo=null;
+
+            if (Complemento == "3.3")
+            {
+                
+                Metodo = Forma_de_pago.Split(',');
+            }
+            if (Complemento == "3.2")
+            {
+                Metodo = Mpago.Split(',');
+            }
             int j=0;
             this.MetodoPago = "";
             foreach(string i in Metodo)
@@ -968,36 +985,74 @@ namespace GUAYACAN
          * se debe de poner un punto de condicion para saber si con que version de xml se esta trabajando
          */
 
-        private bool Validacion_Version_XML(string archivoXML, string archivoXSD)
+        private bool Validacion_Version_XML(string archivoXML, string archivoXSD, string cfdiXSD, string tf, int ver)
         {
+            XmlReader xmlReader;
+            //string tf = "TimbreFiscalDigital.xsd";
             try
             {
                 //XmlTextReader tr = new XmlTextReader(archivoXML); // se monto el xml que se va a validar
                 //XmlValidatingReader vr = new XmlValidatingReader(tr); // se coloca el contenido del archivo en memoria
+                //if (ver == 33)
+                //{
+                    XmlReaderSettings settings = new XmlReaderSettings();
+                    settings.ValidationType = ValidationType.Schema;
+                    settings.Schemas.Add(null, XmlReader.Create(@archivoXSD));
+                    //settings.Schemas.Add("http://www.sat.gob.mx/nomina", archivoXSD);
+                    //settings.Schemas.Add(null, XmlReader.Create(@cfdiXSD));
+                    //settings.Schemas.Add(null, XmlReader.Create(tf));
 
-                XmlReaderSettings settings = new XmlReaderSettings();
-                settings.ValidationType = ValidationType.Schema;
-                settings.Schemas.Add(null,XmlReader.Create(@archivoXSD));
+                    xmlReader = XmlReader.Create(@archivoXML, settings);
+                    XmlDocument xmlDoc = new XmlDocument();
+                    xmlDoc.Load(xmlReader);
+                    xmlReader.Close();
+                    return false;
 
-                XmlReader xmlReader = XmlReader.Create(@archivoXML,settings);
-                XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(xmlReader);
-                xmlReader.Close();
-                return false;
+                //}
+                /*else
+                {
+                    if (ver == 32)
+                    {
+                        XmlReaderSettings settings = new XmlReaderSettings();
+                        settings.ValidationType = ValidationType.Schema;
+                        settings.Schemas.Add(null, XmlReader.Create(@archivoXSD));
+                        settings.Schemas.Add("http://www.sat.gob.mx/nomina", archivoXSD);
+                        settings.Schemas.Add(null, XmlReader.Create(@cfdiXSD));
+                        settings.Schemas.Add(null, XmlReader.Create(tf));
+
+                        xmlReader = XmlReader.Create(@archivoXML, settings);
+                        XmlDocument xmlDoc = new XmlDocument();
+                        xmlDoc.Load(xmlReader);
+                        xmlReader.Close();
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                    
+                }*/
             }
             catch (Exception ex)
             {
+                
                 return true;
+
             }
             
         }
+
+        //static void settingsValidationEventHandler(object sender, ValidationEventArgs)
 
         private void LeerXML(string archivo)
         {
             string archivoXSD_32 = "nomina11.xsd"; //Application.StartupPath + @"\cfdv32.xsd";
             string archivoXSD_33 = "nomina12.xsd"; //Application.StartupPath + @"\cfdv33.xsd";
+            string cfdiXSD_33 = "cfdv33.xsd";
+            string cfdiXSD_32= "cfdv32.xsd";
+            string tf="TimbreFiscalDigital.xsd";
 
-            if (!Validacion_Version_XML(archivo, archivoXSD_33))
+            if (!Validacion_Version_XML(archivo, archivoXSD_33, cfdiXSD_33, tf,33))
             {
                 //Bitacora("El archivo " + archivo + "es de la version 3.2 de cfdi");
                 System.Xml.XmlTextReader Recibo = new System.Xml.XmlTextReader(@archivo);
@@ -1015,52 +1070,149 @@ namespace GUAYACAN
                         {
                             case "cfdi:Comprobante":
                                 {
-                                    SerieCertificadoEmisor = Recibo.GetAttribute("NoCertificado").ToString();
-                                    Sello = Recibo.GetAttribute("Sello").ToString();
-                                    total = Recibo.GetAttribute("Total").ToString();
-                                    //se cambian los valores de la forma de pago  por el metodo de pago esto debido al cambio del sat en la version 3.3.
-                                    Forma_de_pago = Recibo.GetAttribute("MetodoPago"); //Recibo.GetAttribute("FormaDePago");  
-                                    Mpago = Recibo.GetAttribute("FormaPago"); //Recibo.GetAttribute("MetodoDePago");
-                                    Complemento = Recibo.GetAttribute("Version").ToString();
+
+                                    if (Recibo.GetAttribute("NoCertificado") != null)
+                                    {
+                                        SerieCertificadoEmisor = Recibo.GetAttribute("NoCertificado").ToString();
+                                    }
+                                    
+                                    if(Recibo.GetAttribute("noCertificado") != null)
+                                    {
+                                        SerieCertificadoEmisor = Recibo.GetAttribute("noCertificado").ToString();
+                                    }
+
+                                    if (Recibo.GetAttribute("Version") != null)
+                                    {
+                                        Complemento = Recibo.GetAttribute("Version").ToString();
+                                    }
+
+                                    if (Recibo.GetAttribute("version") != null)
+                                    {
+                                        Complemento = Recibo.GetAttribute("version").ToString();
+                                    }
+
+                                    if (Complemento == "3.2")
+                                    {
+                                        Forma_de_pago = Recibo.GetAttribute("formaDePago"); //Recibo.GetAttribute("FormaDePago");  
+                                        Mpago = Recibo.GetAttribute("metodoDePago"); //Recibo.GetAttribute("MetodoDePago");
+
+                                        Sello = Recibo.GetAttribute("sello").ToString();
+                                        total = Recibo.GetAttribute("total").ToString();
+
+                                    }
+
+                                    if (Complemento == "3.3")
+                                    {
+                                        //se cambian los valores de la forma de pago  por el metodo de pago esto debido al cambio del sat en la version 3.3.
+                                        Forma_de_pago = Recibo.GetAttribute("MetodoPago"); //Recibo.GetAttribute("FormaDePago");  
+                                        Mpago = Recibo.GetAttribute("FormaPago"); //Recibo.GetAttribute("MetodoDePago");
+
+                                        Sello = Recibo.GetAttribute("Sello").ToString();
+                                        total = Recibo.GetAttribute("Total").ToString();
+                                    }
+                                    
+                                        //Sello = Recibo.GetAttribute("Sello").ToString();
+                                        //total = Recibo.GetAttribute("Total").ToString();
+                                        //se cambian los valores de la forma de pago  por el metodo de pago esto debido al cambio del sat en la version 3.3.
+                                        //Forma_de_pago = Recibo.GetAttribute("MetodoPago"); //Recibo.GetAttribute("FormaDePago");  
+                                        //Mpago = Recibo.GetAttribute("FormaPago"); //Recibo.GetAttribute("MetodoDePago");
+                                        //Complemento = Recibo.GetAttribute("Version").ToString();
+                                    
                                     break;
                                 }
                             case "cfdi:Emisor":
                                 {
-                                    rfcemisor = Recibo.GetAttribute("Rfc").ToString();
-                                    emisor = Recibo.GetAttribute("Nombre").ToString();
+                                    if (Complemento == "3.3")
+                                    {
+                                        rfcemisor = Recibo.GetAttribute("Rfc").ToString();
+                                        emisor = Recibo.GetAttribute("Nombre").ToString();
+                                    }
+
+                                    if (Complemento == "3.2")
+                                    {
+                                        rfcemisor = Recibo.GetAttribute("rfc").ToString();
+                                        emisor = Recibo.GetAttribute("nombre").ToString();
+                                    }
+
                                     break;
                                 }
                             case "cfdi:Receptor":
                                 {
-                                    rfc = Recibo.GetAttribute("Rfc").ToString(); //rfc del trabajador
-                                    nombre_receptor = Recibo.GetAttribute("Nombre").ToString();
+                                    if (Complemento == "3.3")
+                                    {
+                                        rfc = Recibo.GetAttribute("Rfc").ToString(); //rfc del trabajador
+                                        nombre_receptor = Recibo.GetAttribute("Nombre").ToString();
+                                    }
+
+                                    if (Complemento == "3.2")
+                                    {
+                                        rfc = Recibo.GetAttribute("rfc").ToString(); //rfc del trabajador
+                                        nombre_receptor = Recibo.GetAttribute("nombre").ToString();
+                                    }
+
                                     break;
                                 }
                             case "tfd:TimbreFiscalDigital":
                                 {
-                                    FolioFiscal = Recibo.GetAttribute("UUID").ToString(); //nodo["tfd:TimbreFiscalDigital "].GetAttribute("UUID").ToString();
-                                    SelloSat = Recibo.GetAttribute("SelloSAT").ToString();
-                                    SerieCertificadoSat = Recibo.GetAttribute("NoCertificadoSAT").ToString();
-                                    Version = Recibo.GetAttribute("Version").ToString();
-                                    FechaTimbrado = Recibo.GetAttribute("FechaTimbrado").ToString();
-                                    rfcprovcertif = Recibo.GetAttribute("RfcProvCertif").ToString();
+                                    if (Complemento == "3.3")
+                                    {
+                                        FolioFiscal = Recibo.GetAttribute("UUID").ToString(); //nodo["tfd:TimbreFiscalDigital "].GetAttribute("UUID").ToString();
+                                        SelloSat = Recibo.GetAttribute("SelloSAT").ToString();
+                                        SerieCertificadoSat = Recibo.GetAttribute("NoCertificadoSAT").ToString();
+                                        Version = Recibo.GetAttribute("Version").ToString();
+                                        FechaTimbrado = Recibo.GetAttribute("FechaTimbrado").ToString();
+                                        rfcprovcertif = Recibo.GetAttribute("RfcProvCertif").ToString();
+                                    }
+
+                                    if (Complemento == "3.2")
+                                    {
+                                        FolioFiscal = Recibo.GetAttribute("UUID").ToString(); //nodo["tfd:TimbreFiscalDigital "].GetAttribute("UUID").ToString();
+                                        SelloSat = Recibo.GetAttribute("selloSAT").ToString();
+                                        SerieCertificadoSat = Recibo.GetAttribute("noCertificadoSAT").ToString();
+                                        Version = Recibo.GetAttribute("version").ToString();
+                                        FechaTimbrado = Recibo.GetAttribute("FechaTimbrado").ToString();
+                                        
+                                    }
+
 
                                     break;
                                 }
                             case "nomina12:Nomina":
                                 {
-                                    //periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();                                
-                                    FechaPago = Recibo.GetAttribute("FechaPago").ToString();
-                                    //NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
-                                    VersionCFDI = Recibo.GetAttribute("Version").ToString();
+                                    if (Complemento == "3.3")
+                                    {
+                                        //periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();                                
+                                        FechaPago = Recibo.GetAttribute("FechaPago").ToString();
+                                        //NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
+                                        VersionCFDI = Recibo.GetAttribute("Version").ToString();
+                                    }
+
+                                    if (Complemento == "3.2")
+                                    {
+                                        //periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();                                
+                                        FechaPago = Recibo.GetAttribute("FechaPago").ToString();
+                                        //NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
+                                        VersionCFDI = Recibo.GetAttribute("Version").ToString();
+                                    }
                                     break;
                                 }
                             case "nomina12:Receptor":
                                 {
-                                    periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();
-                                    //FechaPago = Recibo.GetAttribute("FechaPago").ToString();
-                                    NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
-                                    //VersionCFDI = Recibo.GetAttribute("Version").ToString();
+                                    if (Complemento == "3.3")
+                                    {
+                                        periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();
+                                        //FechaPago = Recibo.GetAttribute("FechaPago").ToString();
+                                        NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
+                                        //VersionCFDI = Recibo.GetAttribute("Version").ToString();
+                                    }
+
+                                    if (Complemento == "3.2")
+                                    {
+                                        periodo = Recibo.GetAttribute("PeriodicidadPago").ToString();
+                                        //FechaPago = Recibo.GetAttribute("FechaPago").ToString();
+                                        NumeroEmpleado = Recibo.GetAttribute("NumEmpleado").ToString();
+                                        //VersionCFDI = Recibo.GetAttribute("Version").ToString();
+                                    }
                                     break;
                                 }
                         }
@@ -1072,6 +1224,11 @@ namespace GUAYACAN
                 }
                 Recibo.Close();
             }
+
+            //if (!Validacion_Version_XML(archivo, archivoXSD_32, cfdiXSD_32,tf,32))
+            //{
+            //    MessageBox.Show("Archivo validado con version 3.2");
+            //}
                         
 
         }
