@@ -90,6 +90,7 @@ namespace GUAYACAN
         public string total;
         public string qr;
         public string tt;
+        public string fe;
         public string Forma_de_pago;
         public string Mpago;
         public string MetodoPago;
@@ -145,20 +146,35 @@ namespace GUAYACAN
                     index = 1;
                     int i = 0;
                     DirectoryInfo di = new DirectoryInfo(Properties.Settings.Default.RutaTrabajo);//(@"c:\NominasCFDI"); //valor cambiable para indicar el origen
+                    
+                    //01112017
+                    //se agrego la bitacora al situar el directorio de trabajo.
+
+                    Bitacora("Se accesa al directorio de trabajo " + @Properties.Settings.Default.RutaTrabajo);
+                    
                     FileInfo[] archivos = di.GetFiles("*.xml");
                     //string Carpeta;
 
                     foreach (FileInfo f in archivos)
                     {
                         string nomarchivo = f.Name.ToString();
-                        
+
+                        //01112017
+                        //se agrega en la bitacora el archivo que se va empezar a procesar
+                        Bitacora("Se va a ocupar el archivo " + nomarchivo.ToString());
+
                         //24102017
                         //establecer control de validación para poder definir si se logro acceder a la información del
                         //comprobante fiscal cfdi o xml.
 
                         LeerXML(f.FullName.ToString());
+
+
                         string[] Nombre = nomarchivo.Split('.');
+                        //01112017
+                        //se obtiene el guid del archivo con el cual esta registrado en la base de datos en la bitacora.
                         GUIdArchivo = Nombre[0];
+                        Bitacora("Guid de trabajo " + Nombre[0].ToString());
                         string sucursal = periodo;
                         tt = "";
                         //PeriodoNumero(GUIdArchivo); // se obtiene el numero de periodo que se aplica el recibo
@@ -207,7 +223,7 @@ namespace GUAYACAN
 
                                             if(Complemento=="3.3")
                                             {
-                                                CadenaOriginal = "||" + Version + "|" + FolioFiscal + "|" + FechaTimbrado + "|" + Sello + "|" + SerieCertificadoSat + "||";
+                                                CadenaOriginal = "||" + Version + "|" + FolioFiscal + "|" + FechaTimbrado + "|" + rfcprovcertif + "|" + Sello + "|" + SerieCertificadoSat + "||";
                                             }
 
                                             if (Complemento == "3.2")
@@ -221,13 +237,18 @@ namespace GUAYACAN
                                                 cLetra = camletra.ConvertirCadena(total);
 
                                                 totalqr(total);
+
+                                                // fecha 31/10/2017
+                                                //correccion para agregar los ultimos 8 caracteres de la firma digital o sello.
+
+                                                Obtener_fe();
                                                 
                                                 //fecha 23/10/2017
                                                 //modificacion de generacion de contenido del qrcode donde se indica la version del complemento.
 
                                                 if (Complemento == "3.3")
                                                 {
-                                                    qr= "https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?&id="+FolioFiscal+"&re="+rfcemisor+"&rr="+rfc+"&tt="+tt;
+                                                    qr= "https://verificacfdi.facturaelectronica.sat.gob.mx/default.aspx?&id="+FolioFiscal+"&re="+rfcemisor+"&rr="+rfc+"&tt="+tt+"&fe="+fe;
 
                                                 }
 
@@ -629,23 +650,31 @@ namespace GUAYACAN
         }
 
 
+        ///
+
+        private void Obtener_fe()
+        {
+            this.fe = Sello.Substring(Sello.Length - 8, 8);
+        }
+
         /// <summary>
         /// Metodo_Pago
         /// Traduce los códigos del método de pago de su valor numerico al valor de su significado en texto.
         /// </summary>
         private void Metodo_Pago()
         {
-            string[] Metodo=null;
+            string[] Metodo = Mpago.Split(',');
 
-            if (Complemento == "3.3")
-            {
+            //if (Complemento == "3.3")
+            //{
                 
-                Metodo = Forma_de_pago.Split(',');
-            }
-            if (Complemento == "3.2")
-            {
-                Metodo = Mpago.Split(',');
-            }
+            //    //Metodo = Forma_de_pago.Split(',');
+            //    Metodo[0]=Forma_de_pago;
+            //}
+            //if (Complemento == "3.2")
+            //{
+            //    Metodo = Mpago.Split(',');
+            //}
             int j=0;
             this.MetodoPago = "";
             foreach(string i in Metodo)
@@ -837,7 +866,7 @@ namespace GUAYACAN
             string agregado = "0";
             
             
-            for (int i = 0; i < (10-numero[0].Length); i++)
+            for (int i = 0; i < (18-numero[0].Length); i++)
             {
                 tt += agregado;
             }
@@ -949,15 +978,24 @@ namespace GUAYACAN
 
         private void btnXML_Click(object sender, EventArgs e)
         {
+            //01112017
+            //se inicializa el proceso de registro en la bitacora
+            Bitacora("Inicia el proceso de lectura");
             if (!Val_Directorios())
             {
                 DirectoryInfo di = new DirectoryInfo(Properties.Settings.Default.RutaTrabajo);//(@"c:\NominasCFDI"); //valor cambiable para indicar el origen
+                Bitacora("Se establece el directorio de trabajo");
                 FileInfo[] archivos = di.GetFiles("*.xml");
+                Bitacora("Se obtine el numero de de archivos que se van a trabajar");
+
 
                 this.EsCancelado = false;
                 if (!backgroundWorker.IsBusy)
                 {
                     _procesoEyS.proceso = archivos.Count(); //1200;
+
+                    Bitacora("Cantidad de archivo....: "+ _procesoEyS.proceso.ToString());
+                    
                     _procesoEyS.retraso = 100;
                     backgroundWorker.RunWorkerAsync(_procesoEyS);
                     Modulo = "Cargado de XML";
@@ -1533,27 +1571,36 @@ namespace GUAYACAN
 
         private bool Val_Directorios()
         {
+            //01112017
+            //se agregaron las validaciones de los directorios de trabajo, organizacion y trabajo en la bitacora.
+
             if (Properties.Settings.Default.RutaTrabajo != null && Properties.Settings.Default.RutaTrabajo.Length > 0 && Properties.Settings.Default.RutaTrabajo != string.Empty)
             {
+                Bitacora("Si existe el directorio de trabajo");
                 if (Properties.Settings.Default.RutaOrganizacion != null && Properties.Settings.Default.RutaOrganizacion.Length > 0 && Properties.Settings.Default.RutaOrganizacion != string.Empty)
                 {
+                    Bitacora("Si existe el directorio de organización");
                     if (Properties.Settings.Default.RutaPublicacion != null && Properties.Settings.Default.RutaPublicacion.Length > 0 && Properties.Settings.Default.RutaPublicacion != string.Empty)
                     {
+                        Bitacora("Si existe el directorio de publicación");
                         return false;
                     }
                     else
                     {
+                        Bitacora("No existe el directorio de publicación");
                         return true;
                     }
                 }
                 else
                 {
+                    Bitacora("No existe el directorio de organizacion");
                     return true;
                 }
             }
             else
             {
                 return true;
+                Bitacora("Si existe el directorio de trabajo");
             }
         }
 
